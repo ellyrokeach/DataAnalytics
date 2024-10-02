@@ -176,12 +176,59 @@ div.csl-indent {
 <section id="analysis-of-month" class="level3">
 <h3 class="anchored" data-anchor-id="analysis-of-month"><strong>Analysis of Month</strong></h3>
 <p>We begin by plotting the data in a bar chart, to see what months have the highest concentration of fires.</p>
-<div id="fa2936d3" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ggplot() <span class="op">+</span> geom_bar(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>df, stat<span class="op">=</span><span class="st">'count'</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'month'</span>, y<span class="op">=</span><span class="st">'..count..'</span>), fill<span class="op">=</span><span class="st">'#FFA500'</span>) <span class="op">+</span> scale_y_continuous(breaks<span class="op">=</span><span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="dv">20</span>))) <span class="op">+</span> ggsize(<span class="dv">600</span>, <span class="dv">300</span>) <span class="op">+</span> ggtitle(<span class="st">"Number of Fires by Month in Montesinho Natural Park, Portugal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="41">
-   <div id="0o2t4E"></div>
+<div id="e781cff9" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lets_plot <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> multinomial</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>LetsPlot.setup_html()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+            <div id="WfmfrY"></div>
+            <script type="text/javascript" data-lets-plot-script="library">
+                if(!window.letsPlotCallQueue) {
+                    window.letsPlotCallQueue = [];
+                }; 
+                window.letsPlotCall = function(f) {
+                    window.letsPlotCallQueue.push(f);
+                };
+                (function() {
+                    var script = document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = "https://cdn.jsdelivr.net/gh/JetBrains/lets-plot@v4.4.1/js-package/distr/lets-plot.min.js";
+                    script.onload = function() {
+                        window.letsPlotCall = function(f) {f();};
+                        window.letsPlotCallQueue.forEach(function(f) {f();});
+                        window.letsPlotCallQueue = [];
+                        
+                    };
+                    script.onerror = function(event) {
+                        window.letsPlotCall = function(f) {};    // noop
+                        window.letsPlotCallQueue = [];
+                        var div = document.createElement("div");
+                        div.style.color = 'darkred';
+                        div.textContent = 'Error loading Lets-Plot JS';
+                        document.getElementById("WfmfrY").appendChild(div);
+                    };
+                    var e = document.getElementById("WfmfrY");
+                    e.appendChild(script);
+                })()
+            </script>
+            
+</div>
+</div>
+<div id="3744d995" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">'forestfires.csv'</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>df.head()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>month_type <span class="op">=</span> pd.CategoricalDtype(categories<span class="op">=</span>[<span class="st">'jan'</span>, <span class="st">'feb'</span>, <span class="st">'mar'</span>, <span class="st">'apr'</span>, <span class="st">'may'</span>, <span class="st">'jun'</span>, <span class="st">'jul'</span>, <span class="st">'aug'</span>, <span class="st">'sep'</span>, <span class="st">'oct'</span>, <span class="st">'nov'</span>, <span class="st">'dec'</span>], ordered<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'month'</span>] <span class="op">=</span> df[<span class="st">'month'</span>].astype(month_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="6d2dfe38" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ggplot() <span class="op">+</span> geom_bar(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>df, stat<span class="op">=</span><span class="st">'count'</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'month'</span>, y<span class="op">=</span><span class="st">'..count..'</span>), fill<span class="op">=</span><span class="st">'#FFA500'</span>) <span class="op">+</span> scale_y_continuous(breaks<span class="op">=</span><span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="dv">20</span>))) <span class="op">+</span> ggsize(<span class="dv">600</span>, <span class="dv">300</span>) <span class="op">+</span> ggtitle(<span class="st">"Number of Fires by Month in Montesinho Natural Park, Portugal"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="39">
+   <div id="EYnIqy"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -259,7 +306,7 @@ div.csl-indent {
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("0o2t4E");
+           var plotContainer = document.getElementById("EYnIqy");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});
@@ -270,12 +317,12 @@ div.csl-indent {
 <p><br></p>
 <p>This plot shows that the number of fires reached 184 in August and 172 in September. Since this is largely above the numbers in any of the other months, this indicates that the peak fire season in this region of Portugal is in August and September.</p>
 <p>Given the cyclical nature of the calendar, we can also visualize this data with a polar bar chart. This plot also demonstrates that the highest concentration of fires is in August and September. From October into February, it can be seen that there are very few fires, and while there is a slight jump in March, the low fire rate continues from April through July.</p>
-<div id="41157da1" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ggplot() <span class="op">+</span> geom_bar(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>df, stat<span class="op">=</span><span class="st">'count'</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'month'</span>, y<span class="op">=</span><span class="st">'..count..'</span>), fill<span class="op">=</span><span class="st">'#FFA500'</span>) <span class="op">+</span> coord_polar() <span class="op">+</span> scale_x_discrete(labels<span class="op">=</span>new_labels) <span class="op">+</span>scale_y_continuous(limits<span class="op">=</span> [<span class="op">-</span><span class="dv">100</span>, <span class="dv">200</span>],breaks <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">150</span>, <span class="dv">200</span>]) <span class="op">+</span> ggsize(<span class="dv">800</span>, <span class="dv">400</span>) <span class="op">+</span> ggtitle(<span class="st">"Number of Fires by Month in Montesinho Natural Park, Portugal"</span>) <span class="op">+</span> theme(panel_grid_major_x<span class="op">=</span>element_blank(), axis_title_y<span class="op">=</span>element_text(vjust<span class="op">=</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="43">
-   <div id="jCoGSa"></div>
+<div id="5f344ab4" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ggplot() <span class="op">+</span> geom_bar(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>df, stat<span class="op">=</span><span class="st">'count'</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'month'</span>, y<span class="op">=</span><span class="st">'..count..'</span>), fill<span class="op">=</span><span class="st">'#FFA500'</span>) <span class="op">+</span> coord_polar() <span class="op">+</span> scale_x_discrete(labels<span class="op">=</span>new_labels) <span class="op">+</span>scale_y_continuous(limits<span class="op">=</span> [<span class="op">-</span><span class="dv">100</span>, <span class="dv">200</span>],breaks <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">150</span>, <span class="dv">200</span>]) <span class="op">+</span> ggsize(<span class="dv">800</span>, <span class="dv">400</span>) <span class="op">+</span> ggtitle(<span class="st">"Number of Fires by Month in Montesinho Natural Park, Portugal"</span>) <span class="op">+</span> theme(panel_grid_major_x<span class="op">=</span>element_blank(), axis_title_y<span class="op">=</span>element_text(vjust<span class="op">=</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="41">
+   <div id="Ipa592"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -372,7 +419,7 @@ div.csl-indent {
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("jCoGSa");
+           var plotContainer = document.getElementById("Ipa592");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});
@@ -382,51 +429,51 @@ div.csl-indent {
 </div>
 <p>Assuming that our observed fire counts are representitive of the distrbution of actual fire occurrences, we can fit a multinomial distribution to the data and simulate the expected number of fires for any given month.</p>
 <p>Below, we run 1000 simulations, where each simulation generates 517 fire counts based on the fitted multinomial distribution. We have plotted the observed fire counts in the original dataset in orange bars, along with the range of uncertainty generated by the simulated counts plotted in red.</p>
-<div id="f5f035ed" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> multinomial</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lets_plot <span class="im">import</span> <span class="op">*</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>LetsPlot.setup_html()</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>fire_counts <span class="op">=</span> df[<span class="st">'month'</span>].value_counts()</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>total_fires <span class="op">=</span> fire_counts.<span class="bu">sum</span>()</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>probabilities <span class="op">=</span> fire_counts <span class="op">/</span> total_fires</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>n_simulations <span class="op">=</span> <span class="dv">1000</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>simulated_counts <span class="op">=</span> np.array([multinomial.rvs(total_fires, probabilities) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_simulations)])</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>expected_min <span class="op">=</span> simulated_counts.<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>expected_max <span class="op">=</span> simulated_counts.<span class="bu">max</span>(axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Month'</span>: fire_counts.index,</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Observed'</span>: fire_counts.values</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'min_expected'</span>] <span class="op">=</span> expected_min</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'max_expected'</span>] <span class="op">=</span> expected_max</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'Legend'</span>] <span class="op">=</span> <span class="st">'Observed'</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'Range'</span>] <span class="op">=</span> <span class="st">'Range'</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> (ggplot() <span class="op">+</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>     geom_bar(aes(x<span class="op">=</span><span class="st">'Month'</span>, y<span class="op">=</span><span class="st">'Observed'</span>, fill<span class="op">=</span><span class="st">'Legend'</span>), stat<span class="op">=</span><span class="st">'identity'</span>, position<span class="op">=</span><span class="st">'dodge'</span>, data<span class="op">=</span>plot_data, show_legend<span class="op">=</span><span class="va">True</span>) <span class="op">+</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>     geom_linerange(aes(x<span class="op">=</span><span class="st">'Month'</span>, ymin<span class="op">=</span><span class="st">'min_expected'</span>, ymax<span class="op">=</span><span class="st">'max_expected'</span>, color<span class="op">=</span><span class="st">'Range'</span>), size<span class="op">=</span><span class="fl">3.0</span>, data<span class="op">=</span>plot_data, show_legend<span class="op">=</span><span class="va">True</span>) <span class="op">+</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>     scale_y_continuous(breaks<span class="op">=</span><span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="dv">20</span>))) <span class="op">+</span></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>     ggsize(<span class="dv">800</span>, <span class="dv">400</span>) <span class="op">+</span></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>     ggtitle(<span class="st">"Observed Fire Counts by Month with Range of Uncertainty Across 1000 Simulations"</span>) <span class="op">+</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>     theme(axis_text_x<span class="op">=</span>element_text(hjust<span class="op">=</span><span class="dv">1</span>)) <span class="op">+</span></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>     scale_fill_manual(values<span class="op">=</span>[<span class="st">'#FFA500'</span>], name<span class="op">=</span><span class="st">''</span>) <span class="op">+</span></span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>     scale_color_manual(values<span class="op">=</span>[<span class="st">'red'</span>], name<span class="op">=</span><span class="st">''</span>)</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>p.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="4f54877a" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> multinomial</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lets_plot <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>LetsPlot.setup_html()</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>fire_counts <span class="op">=</span> df[<span class="st">'month'</span>].value_counts()</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>total_fires <span class="op">=</span> fire_counts.<span class="bu">sum</span>()</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>probabilities <span class="op">=</span> fire_counts <span class="op">/</span> total_fires</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>n_simulations <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>simulated_counts <span class="op">=</span> np.array([multinomial.rvs(total_fires, probabilities) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_simulations)])</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>expected_min <span class="op">=</span> simulated_counts.<span class="bu">min</span>(axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>expected_max <span class="op">=</span> simulated_counts.<span class="bu">max</span>(axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Month'</span>: fire_counts.index,</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Observed'</span>: fire_counts.values</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'min_expected'</span>] <span class="op">=</span> expected_min</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'max_expected'</span>] <span class="op">=</span> expected_max</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'Legend'</span>] <span class="op">=</span> <span class="st">'Observed'</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>plot_data[<span class="st">'Range'</span>] <span class="op">=</span> <span class="st">'Range'</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> (ggplot() <span class="op">+</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>     geom_bar(aes(x<span class="op">=</span><span class="st">'Month'</span>, y<span class="op">=</span><span class="st">'Observed'</span>, fill<span class="op">=</span><span class="st">'Legend'</span>), stat<span class="op">=</span><span class="st">'identity'</span>, position<span class="op">=</span><span class="st">'dodge'</span>, data<span class="op">=</span>plot_data, show_legend<span class="op">=</span><span class="va">True</span>) <span class="op">+</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>     geom_linerange(aes(x<span class="op">=</span><span class="st">'Month'</span>, ymin<span class="op">=</span><span class="st">'min_expected'</span>, ymax<span class="op">=</span><span class="st">'max_expected'</span>, color<span class="op">=</span><span class="st">'Range'</span>), size<span class="op">=</span><span class="fl">3.0</span>, data<span class="op">=</span>plot_data, show_legend<span class="op">=</span><span class="va">True</span>) <span class="op">+</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>     scale_y_continuous(breaks<span class="op">=</span><span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="dv">20</span>))) <span class="op">+</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>     ggsize(<span class="dv">800</span>, <span class="dv">400</span>) <span class="op">+</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>     ggtitle(<span class="st">"Observed Fire Counts by Month with Range of Uncertainty Across 1000 Simulations"</span>) <span class="op">+</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>     theme(axis_text_x<span class="op">=</span>element_text(hjust<span class="op">=</span><span class="dv">1</span>)) <span class="op">+</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>     scale_fill_manual(values<span class="op">=</span>[<span class="st">'#FFA500'</span>], name<span class="op">=</span><span class="st">''</span>) <span class="op">+</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>     scale_color_manual(values<span class="op">=</span>[<span class="st">'red'</span>], name<span class="op">=</span><span class="st">''</span>)</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>p.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 
-            <div id="OrpWtK"></div>
+            <div id="XctGuy"></div>
             <script type="text/javascript" data-lets-plot-script="library">
                 if(!window.letsPlotCallQueue) {
                     window.letsPlotCallQueue = [];
@@ -450,16 +497,16 @@ div.csl-indent {
                         var div = document.createElement("div");
                         div.style.color = 'darkred';
                         div.textContent = 'Error loading Lets-Plot JS';
-                        document.getElementById("OrpWtK").appendChild(div);
+                        document.getElementById("XctGuy").appendChild(div);
                     };
-                    var e = document.getElementById("OrpWtK");
+                    var e = document.getElementById("XctGuy");
                     e.appendChild(script);
                 })()
             </script>
             
 </div>
 <div class="cell-output cell-output-display">
-   <div id="F71SJY"></div>
+   <div id="8lT4jK"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -535,8 +582,8 @@ div.csl-indent {
 "geom":"linerange",
 "data":{
 "Month":["aug","sep","mar","jul","feb","jun","oct","apr","dec","jan","may","nov"],
-"min_expected":[152.0,134.0,31.0,17.0,6.0,6.0,4.0,1.0,0.0,0.0,0.0,0.0],
-"max_expected":[219.0,204.0,78.0,50.0,35.0,30.0,27.0,21.0,18.0,7.0,9.0,5.0],
+"min_expected":[147.0,132.0,32.0,14.0,8.0,4.0,4.0,1.0,1.0,0.0,0.0,0.0],
+"max_expected":[218.0,218.0,82.0,52.0,38.0,30.0,28.0,21.0,19.0,8.0,7.0,5.0],
 "Range":["Range","Range","Range","Range","Range","Range","Range","Range","Range","Range","Range","Range"]
 },
 "mapping":{
@@ -573,7 +620,7 @@ div.csl-indent {
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("F71SJY");
+           var plotContainer = document.getElementById("8lT4jK");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});
@@ -585,19 +632,19 @@ div.csl-indent {
 </section>
 <section id="analysis-of-temperature" class="level3">
 <h3 class="anchored" data-anchor-id="analysis-of-temperature"><strong>Analysis of Temperature</strong></h3>
-<div id="93f834c8" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mean_temp <span class="op">=</span> df[<span class="st">'temp'</span>].mean()</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>ggplot() <span class="op">+</span> geom_histogram(</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>df, </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'temp'</span>), bins<span class="op">=</span><span class="dv">80</span>, fill<span class="op">=</span><span class="st">'#FFA500'</span>) <span class="op">+</span> <span class="op">\</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    geom_vline(</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        xintercept<span class="op">=</span>mean_temp, </span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">'red'</span>,</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        linetype<span class="op">=</span><span class="st">'longdash'</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        size<span class="op">=</span><span class="dv">1</span>) <span class="op">+</span> ggsize(<span class="dv">800</span>, <span class="dv">400</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="45">
-   <div id="XArJ1z"></div>
+<div id="dba51468" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mean_temp <span class="op">=</span> df[<span class="st">'temp'</span>].mean()</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ggplot() <span class="op">+</span> geom_histogram(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>df, </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'temp'</span>), bins<span class="op">=</span><span class="dv">80</span>, fill<span class="op">=</span><span class="st">'#FFA500'</span>) <span class="op">+</span> <span class="op">\</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    geom_vline(</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        xintercept<span class="op">=</span>mean_temp, </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">'red'</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        linetype<span class="op">=</span><span class="st">'longdash'</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        size<span class="op">=</span><span class="dv">1</span>) <span class="op">+</span> ggsize(<span class="dv">800</span>, <span class="dv">400</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="43">
+   <div id="RTU2aL"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -680,7 +727,7 @@ div.csl-indent {
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("XArJ1z");
+           var plotContainer = document.getElementById("RTU2aL");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});
@@ -688,13 +735,13 @@ div.csl-indent {
    </script>
 </div>
 </div>
-<div id="2f53e897" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>min_temp <span class="op">=</span> df[<span class="st">'temp'</span>].<span class="bu">min</span>()</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>max_temp <span class="op">=</span> df[<span class="st">'temp'</span>].<span class="bu">max</span>()</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean temp: "</span> <span class="op">+</span> <span class="bu">str</span>(<span class="bu">round</span>(mean_temp, <span class="dv">2</span>)))</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Min temp: "</span> <span class="op">+</span> <span class="bu">str</span>(min_temp))</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Max temp: "</span> <span class="op">+</span> <span class="bu">str</span>(max_temp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="04862a18" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>min_temp <span class="op">=</span> df[<span class="st">'temp'</span>].<span class="bu">min</span>()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>max_temp <span class="op">=</span> df[<span class="st">'temp'</span>].<span class="bu">max</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean temp: "</span> <span class="op">+</span> <span class="bu">str</span>(<span class="bu">round</span>(mean_temp, <span class="dv">2</span>)))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Min temp: "</span> <span class="op">+</span> <span class="bu">str</span>(min_temp))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Max temp: "</span> <span class="op">+</span> <span class="bu">str</span>(max_temp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Mean temp: 18.89
 Min temp: 2.2
@@ -703,10 +750,10 @@ Max temp: 33.3</code></pre>
 </div>
 <p>This histogram with 80 bins shows a distribution of the number of fires that occurred at each temperature. The mean is marked with a dashed red line. The mean temperatures at which fires occured in this region was 18.89 degrees Celsius. The minimum temperature is 2.2, and the maximum temperature is 33.3.</p>
 <p>The following Kernel Density Estimation plot shows that there is one distinct mode around 20 degrees Celsius. This aligns with the previous histogram plot.</p>
-<div id="5e190091" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ggplot(data<span class="op">=</span>df, mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'temp'</span>)) <span class="op">+</span> geom_density(kernel<span class="op">=</span><span class="st">'gaussian'</span>, bw<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="47">
-   <div id="p46hgS"></div>
+<div id="0d7a51bb" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ggplot(data<span class="op">=</span>df, mapping<span class="op">=</span>aes(x<span class="op">=</span><span class="st">'temp'</span>)) <span class="op">+</span> geom_density(kernel<span class="op">=</span><span class="st">'gaussian'</span>, bw<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="45">
+   <div id="92WtEy"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -780,7 +827,7 @@ Max temp: 33.3</code></pre>
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("p46hgS");
+           var plotContainer = document.getElementById("92WtEy");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});

@@ -3,7 +3,7 @@ title: "Homework 1"
 author: "Elly Rokeach and Franklin Paas"
 date: 9/27/24
 format: html
-jupyter-kernel: .venv
+jupyter-kernel: python3
 bibliography: references.bib
 ---
 
@@ -19,15 +19,14 @@ We begin by plotting the data in a bar chart, to see what months have the highes
 
 
 ```{python}
-#| echo: false
 import numpy as np
 import pandas as pd
 from lets_plot import *
 from scipy.stats import multinomial
+LetsPlot.setup_html()
 ```
 
 ```{python}
-#| echo: false
 df = pd.read_csv('forestfires.csv')
 df.head()
 month_type = pd.CategoricalDtype(categories=['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'], ordered=True)
