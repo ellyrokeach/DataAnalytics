@@ -2,7 +2,7 @@
 title: "Homework 1"
 author: "Elly Rokeach and Franklin Paas"
 date: 9/27/24
-format: typst
+format: html
 jupyter-kernel: .venv
 bibliography: references.bib
 ---
